@@ -1,0 +1,14 @@
+Package: rcove
+Title: This Package Calculates Dispersal Range of Propagules using Rotated Components of Water Velocity
+Version: 0.0.0.9000
+Authors@R: 
+    person("Arieanna", "Balbar", 
+    email = "abalbar@dal.ca", 
+    role = c("aut", "cre"),
+    comment = c(ORCID = "0000-0002-2217-5333"))
+Description: What the package does (one paragraph).
+License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
+    license
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2.9000
