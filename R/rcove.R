@@ -4,10 +4,10 @@
 #' @name rcove
 #' @param theta Angle about which to rotate current velocities. Numeric
 #' @param velocity Velocity time series. Vector consisting of two columns u,v.
-#' @param release_pts Start locations for propagules. sf object
-#' @param PD Planktonic propagule duration of species of interest
-#' @param CPD Competent propagule duration of species of interest
-#' @param land Land to be subtracted from final concatenated polygons
+#' @param release_pts Start locations for propagules. sf points
+#' @param PD Planktonic propagule duration of species of interest. Numeric
+#' @param CPD Competent propagule duration of species of interest. Numeric
+#' @param land Land to be subtracted from final concatenated polygons. sf polygon
 #' @param proj Projected crs in units m.
 #' @keywords dispersal
 #' @export
