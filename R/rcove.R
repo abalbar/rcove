@@ -226,9 +226,9 @@ concatenated_ellipse_PD <- rbind(cut_sw, cut_se, cut_ne, cut_nw) %>%
 
 #Apply rule of thumb for dispersal distance (distance = average velocity X time (CPD))
 foci <- components_of_velocity %>%
-  dplyr::mutate(distance = set_units(as.numeric(speed)*86400*CPD, m))
+  dplyr::mutate(distance = units::set_units(as.numeric(speed)*86400*CPD, m))
 
-angles <- set_units(c(270, 90, 180, 360), degrees)
+angles <- units::set_units(c(270, 90, 180, 360), degrees)
 rotated_angles <- as.data.frame(angles - theta) %>%
   dplyr::rename("angle" = "angles - theta")
 foci_lengths <- cbind(foci, rotated_angles)
