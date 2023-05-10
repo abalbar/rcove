@@ -40,7 +40,7 @@ land <- sf::st_transform(land, proj)
 rotation.matrix <- function(a) matrix(data = c(cos(a), -sin(a), sin(a), cos(a)), nrow = 2, ncol = 2, byrow = TRUE)
 rotated.velocity <- as.matrix(velocity)%*%rotation.matrix(theta) %>% #Rotate velocity time series about angle theta
   as.data.frame() %>%
-  rename("along.shore" = "V1",
+  dplyr::rename("along.shore" = "V1",
          "cross.shore" = "V2")
 
 #Calculate mean of each component of velocity
@@ -48,7 +48,7 @@ components_of_velocity <- rotated.velocity %>%
   tidyr::pivot_longer(cols = c(1,2),
                names_to = "direction",
                values_to = "velocity") %>%
-  mutate(sign = case_when(
+  dplyr::mutate(sign = case_when(
     velocity > 0 ~ "positive",
     TRUE ~ "negative"
   )) %>%
