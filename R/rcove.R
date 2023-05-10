@@ -31,8 +31,8 @@ rcove <- function(theta, velocity, release_pts, PD, CPD, land, proj){
 
 #Format velocity time series
 theta <- units::set_units(theta, "degrees") #set units of theta
-release_pts <- st::st_transform(release_pts, proj)
-land <- st::st_transform(land, proj)
+release_pts <- sf::st_transform(release_pts, proj)
+land <- sf::st_transform(land, proj)
 rotation.matrix <- function(a) matrix(data = c(cos(a), -sin(a), sin(a), cos(a)), nrow = 2, ncol = 2, byrow = TRUE)
 rotated.velocity <- as.matrix(velocity)%*%rotation.matrix(theta) %>% #Rotate velocity time series about angle theta
   as.data.frame() %>%
