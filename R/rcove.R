@@ -48,14 +48,14 @@ components_of_velocity <- rotated.velocity %>%
   tidyr::pivot_longer(cols = c(1,2),
                names_to = "direction",
                values_to = "velocity") %>%
-  dplyr::mutate(sign = case_when(
+  dplyr::mutate(sign = dplyr::case_when(
     velocity > 0 ~ "positive",
     TRUE ~ "negative"
   )) %>%
   dplyr::group_by(direction, sign) %>%
   dplyr::summarise(speed = round(mean(abs(velocity)), digits = 4)) %>%
   dplyr::ungroup() %>%
-  dplyr::mutate(dir = case_when(
+  dplyr::mutate(dir = dplyr::case_when(
     direction == "cross.shore" & sign == "positive" ~ "north",
     direction == "along.shore" & sign == "positive" ~ "east",
     direction == "cross.shore" & sign == "negative" ~ "south",
