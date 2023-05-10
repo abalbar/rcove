@@ -194,7 +194,7 @@ ellipse_points <- rotated_ellipse %>%
   sf::st_cast("MULTIPOINT", ids = id) %>%
   as.data.frame() %>%
   sf::st_as_sf() %>%
-  dplyr::mutate(id = row_number()) %>%
+  dplyr::mutate(id = dplyr::row_number()) %>%
   sf::st_cast("POINT", ids = id) %>%
   dplyr::mutate(ellipse_id = rep(seq(1:60), times = nrow(new_release_pts)))
 
@@ -304,7 +304,7 @@ for(m in 1:4){
     sf::st_cast("MULTIPOINT", ids = id) %>%
     as.data.frame() %>%
     sf::st_as_sf() %>%
-    dplyr::mutate(id = row_number()) %>%
+    dplyr::mutate(id = dplyr::row_number()) %>%
     sf::st_cast("POINT", ids = id) %>%
     dplyr::mutate(ellipse_id = rep(seq(1:60), times = nrow(new_release_pts)))
 
