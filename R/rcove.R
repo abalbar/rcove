@@ -140,7 +140,7 @@ foci_vectors <- release_pts %>%
 ##calculate new centroids based on the 4 kite points
 new_release_pts <- foci_vectors %>%
   dplyr::select(id,dir, geometry) %>%
-  dplyr::rowwise %>%
+  dplyr::rowwise() %>%
   dplyr::mutate(x = sf::st_coordinates(geometry)[1],
          y = sf::st_coordinates(geometry)[2]) %>%
   sf::st_drop_geometry() %>%
@@ -250,7 +250,7 @@ foci_vectors <- release_pts %>%
 ##calculate new centroids based on the 4 kite points
 new_release_pts <- foci_vectors %>%
   dplyr::select(id,dir, geometry) %>%
-  dplyr::rowwise %>%
+  dplyr::rowwise() %>%
   dplyr::mutate(x = sf::st_coordinates(geometry)[1],
          y = sf::st_coordinates(geometry)[2]) %>%
   sf::st_drop_geometry() %>%
