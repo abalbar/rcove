@@ -120,7 +120,7 @@ foci <- components_of_velocity %>%
 
 angles <- units::set_units(c(270, 90, 180, 360), degrees)
 rotated_angles <- as.data.frame(angles - theta) %>%
-  rename("angle" = "angles - theta")
+  dplyr::rename("angle" = "angles - theta")
 foci_lengths <- cbind(foci, rotated_angles)
 
 foci_lengths$angle <- as.numeric(foci_lengths$angle)
@@ -183,11 +183,11 @@ for(m in 1:4){
             sf::st_as_sf()
         }
 
-st_crs(ellipse) <- proj
+sf::st_crs(ellipse) <- proj
 
 ##Rotate ellipse around newrelease_pts
 rotated_ellipse <- (sf::st_geometry(ellipse) - sf::st_geometry(new_release_pts)) * rotation.matrix(-theta) + sf::st_geometry(new_release_pts)
-st_crs(rotated_ellipse) <- proj
+sf::st_crs(rotated_ellipse) <- proj
 
 #Convert to linestring and cut into relative quadrat
 ellipse_points <- rotated_ellipse %>%
@@ -239,10 +239,10 @@ foci_lengths$distance <- as.numeric(foci_lengths$distance)
 foci_vectors <- release_pts %>%
   dplyr::mutate(id = as.factor(row.names(.))) %>%
   merge(foci_lengths) %>%
-  dplyr::mutate(cl=pmap(list(angle,distance),
+  dplyr::mutate(cl=purrr::pmap(list(angle,distance),
                  function(angle,distance) compassline(angle,distance))) %>%
   dplyr::mutate(origin=geometry,
-         geometry=pmap(list(geometry,cl),
+         geometry=purrr::pmap(list(geometry,cl),
                        function(geometry,cl) st_point(st_coordinates(geometry)+cl)) %>%
            st_sfc(crs=proj)) %>%
   dplyr::select(-origin, -cl)
@@ -251,8 +251,8 @@ foci_vectors <- release_pts %>%
 new_release_pts <- foci_vectors %>%
   dplyr::select(id,dir, geometry) %>%
   dplyr::rowwise %>%
-  dplyr::mutate(x = st_coordinates(geometry)[1],
-         y = st_coordinates(geometry)[2]) %>%
+  dplyr::mutate(x = sf::st_coordinates(geometry)[1],
+         y = sf::st_coordinates(geometry)[2]) %>%
   sf::st_drop_geometry() %>%
   tidyr::pivot_wider(names_from = dir, values_from = c(x,y)) %>%
   dplyr::mutate(x_centroid = (x_east + x_west + x_south + x_north)/4,
@@ -269,10 +269,10 @@ north_foci <- foci_vectors %>%
   dplyr::filter(dir == "north")
 south_foci <- foci_vectors %>%
   dplyr::filter(dir == "south")
-ex <- as.numeric(st_distance(east_foci, new_release_pts, by_element = TRUE))
-wx <- as.numeric(st_distance(west_foci, new_release_pts, by_element = TRUE))
-ny <- as.numeric(st_distance(north_foci, new_release_pts, by_element = TRUE))
-sy <- as.numeric(st_distance(south_foci, new_release_pts, by_element = TRUE))
+ex <- as.numeric(sf::st_distance(east_foci, new_release_pts, by_element = TRUE))
+wx <- as.numeric(sf::st_distance(west_foci, new_release_pts, by_element = TRUE))
+ny <- as.numeric(sf::st_distance(north_foci, new_release_pts, by_element = TRUE))
+sy <- as.numeric(sf::st_distance(south_foci, new_release_pts, by_element = TRUE))
 
 
 ##Loop for concentating four ellipse quadrats starts here
@@ -297,7 +297,7 @@ for(m in 1:4){
 
   ##Rotate ellipse around newrelease_pts
   rotated_ellipse <- (sf::st_geometry(ellipse) - sf::st_geometry(new_release_pts)) * rotation.matrix(-theta) + sf::st_geometry(new_release_pts)
-  st_crs(rotated_ellipse) <- proj
+  sf::st_crs(rotated_ellipse) <- proj
 
   #Convert to linestring and cut into relative quadrat
   ellipse_points <- rotated_ellipse %>%
