@@ -2,7 +2,7 @@
 #'
 #' This function allows you to Calculate Dispersal Range of Propagules using Rotated Components of Water Velocity
 #' @name rcove
-#' @param theta Angle about which to rotate current velocities. Numeric
+#' @param theta Angle about which to rotate current velocities. Degrees. Numeric
 #' @param velocity Velocity time series. Vector consisting of two columns u,v.
 #' @param release_pts Start locations for propagules. sf points
 #' @param PD Planktonic propagule duration of species of interest. Numeric
@@ -28,6 +28,8 @@ rcove <- function(theta, velocity, release_pts, PD, CPD, land, proj){
 
 #Format velocity time series
 theta <- set_units(theta, "degrees") #set units of theta
+release_pts <- st_transform(release_pts, proj)
+land <- st_transform(land, proj)
 rotation.matrix <- function(a) matrix(data = c(cos(a), -sin(a), sin(a), cos(a)), nrow = 2, ncol = 2, byrow = TRUE)
 rotated.velocity <- as.matrix(velocity)%*%rotation.matrix(theta) %>% #Rotate velocity time series about angle theta
   as.data.frame() %>%
@@ -208,20 +210,10 @@ m = m+1
 } #end of creating 4 ellipse quadrats
 
 ##Start concatenation
-concatenated_ellipse <- rbind(cut_sw, cut_se, cut_ne, cut_nw) %>%
+concatenated_ellipse_PD <- rbind(cut_sw, cut_se, cut_ne, cut_nw) %>%
   dplyr::group_by(id) %>%
   dplyr::summarise() %>%
-  st_convex_hull() %>%
-  ms_erase(land,
-           remove_slivers = TRUE) %>%
-  st_as_sf() %>%
-  mutate(id = row_number()) %>%
-  st_cast("POLYGON", ids = id)
-concatenated_ellipse_PD <- concatenated_ellipse %>%
-  mutate(area = st_area(concatenated_ellipse)) %>%
-  group_by(id) %>%
-  dplyr::filter(area == max(area)) %>%
-  dplyr::select(-area)
+  st_convex_hull()
 
 # Calculate dispersal area for CPD ====
 
@@ -328,21 +320,16 @@ for(m in 1:4){
 } #end of creating 4 ellipse quadrats
 
 ##Start concatenation
-concatenated_ellipse <- rbind(cut_sw, cut_se, cut_ne, cut_nw) %>%
+concatenated_ellipse_CPD <- rbind(cut_sw, cut_se, cut_ne, cut_nw) %>%
   dplyr::group_by(id) %>%
   dplyr::summarise() %>%
-  st_convex_hull() %>%
-  ms_erase(land,
-           remove_slivers = TRUE) %>%
-  st_as_sf() %>%
-  mutate(id = row_number()) %>%
-  st_cast("POLYGON", ids = id)
-concatenated_ellipse_CPD <- concatenated_ellipse %>%
-  mutate(area = st_area(concatenated_ellipse)) %>%
-  group_by(id) %>%
-  dplyr::filter(area == max(area)) %>%
-  dplyr::select(-area)
+  st_convex_hull()
 
-final_ellipse <<- st_difference(concatenated_ellipse_PD, concatenated_ellipse_CPD)
+CPD_ellipse <- st_difference(concatenated_ellipse_PD, concatenated_ellipse_CPD) |>
+  filter(id == id.1) |>
+  ms_erase(st_simplify(land, dTolerance = 1000),
+           remove_slivers = TRUE)
+
+return(CPD_ellipse)
 
 }
