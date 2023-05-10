@@ -4,15 +4,17 @@
 \alias{rcove}
 \title{A Rcove Function}
 \arguments{
-\item{theta}{Angle about which to rotate current velocities. Numeric}
+\item{theta}{Angle about which to rotate current velocities. Degrees; Numeric}
 
-\item{velocity}{Velocity time series. Vector consisting of two columns u,v.}
+\item{velocity}{Velocity time series; Vector consisting of two columns u,v.}
 
-\item{release_pts}{Start locations for propagules. sf object}
+\item{release_pts}{Start locations for propagules; sf object}
 
-\item{PD}{Planktonic propagule duration of species of interest}
+\item{PD}{Planktonic propagule duration of species of interest; days}
 
-\item{land}{Land to be subtracted from final concatenated polygons}
+\item{CPD}{Competent planktonic propagule duration of species of interest; days}
+
+\item{land}{Land to be subtracted from final concatenated polygons; sf object}
 
 \item{proj}{Projected crs in units m.}
 }

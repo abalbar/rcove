@@ -21,6 +21,7 @@ library(units)
 library(purrr)
 library(nngeo)
 library(sf)
+require(units)
 
 rcove <- function(theta, velocity, release_pts, PD, CPD, land, proj){
 
