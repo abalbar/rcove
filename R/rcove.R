@@ -13,17 +13,21 @@
 #' @import purrr
 #' @import units
 #' @import tidyr
+#' @import dplyr
+#' @import rmapshaper
+#' @import nngeo
+#' @import sf
 #' @export
 #' @examples
 #' rcove()
 
-library(rmapshaper)
-library(dplyr)
-library(tidyr)
-library(units)
-library(purrr)
-library(nngeo)
-library(sf)
+# library(rmapshaper)
+# library(dplyr)
+# library(tidyr)
+# library(units)
+# library(purrr)
+# library(nngeo)
+# library(sf)
 
 rcove <- function(theta, velocity, release_pts, PD, CPD, land, proj){
 
