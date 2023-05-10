@@ -10,6 +10,9 @@
 #' @param land Land to be subtracted from final concatenated polygons. sf polygon
 #' @param proj Projected crs in units m.
 #' @keywords dispersal
+#' @import purrr
+#' @import units
+#' @import tidyr
 #' @export
 #' @examples
 #' rcove()
@@ -21,16 +24,15 @@ library(units)
 library(purrr)
 library(nngeo)
 library(sf)
-require(units)
 
 rcove <- function(theta, velocity, release_pts, PD, CPD, land, proj){
 
 # Prepare velocity time series ====
 
 #Format velocity time series
-theta <- set_units(theta, "degrees") #set units of theta
-release_pts <- st_transform(release_pts, proj)
-land <- st_transform(land, proj)
+theta <- units::set_units(theta, "degrees") #set units of theta
+release_pts <- st::st_transform(release_pts, proj)
+land <- st::st_transform(land, proj)
 rotation.matrix <- function(a) matrix(data = c(cos(a), -sin(a), sin(a), cos(a)), nrow = 2, ncol = 2, byrow = TRUE)
 rotated.velocity <- as.matrix(velocity)%*%rotation.matrix(theta) %>% #Rotate velocity time series about angle theta
   as.data.frame() %>%
@@ -39,7 +41,7 @@ rotated.velocity <- as.matrix(velocity)%*%rotation.matrix(theta) %>% #Rotate vel
 
 #Calculate mean of each component of velocity
 components_of_velocity <- rotated.velocity %>%
-  pivot_longer(cols = c(1,2),
+  tidyr::pivot_longer(cols = c(1,2),
                names_to = "direction",
                values_to = "velocity") %>%
   mutate(sign = case_when(
@@ -110,7 +112,7 @@ compassline <- function(theta,h,origin=NA){
 
 #Apply rule of thumb for dispersal distance (distance = average velocity X time (PD))
 foci <- components_of_velocity %>%
-      mutate(distance = set_units(as.numeric(speed)*86400*PD, m))
+      mutate(distance = units::set_units(as.numeric(speed)*86400*PD, m))
 
 angles <- set_units(c(270, 90, 180, 360), degrees)
 rotated_angles <- as.data.frame(angles - theta) %>%
