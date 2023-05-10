@@ -129,7 +129,7 @@ foci_lengths$distance <- as.numeric(foci_lengths$distance)
 foci_vectors <- release_pts %>%
   dplyr::mutate(id = as.factor(row.names(.))) %>%
   merge(foci_lengths) %>%
-  dplyr::mutate(cl=purrr:pmap(list(angle,distance),
+  dplyr::mutate(cl=purrr::pmap(list(angle,distance),
                  function(angle,distance) compassline(angle,distance))) %>%
   dplyr::mutate(origin=geometry,
          geometry=purrr::pmap(list(geometry,cl),
