@@ -170,16 +170,16 @@ m <- 1
 
 for(m in 1:4){
   if (m == 1){
-    ellipse <- sf::st_ellipse(pnt = new_release_pts, ex = wx/2, ey = sy/2, res = 60) %>%
+    ellipse <- nngeo::st_ellipse(pnt = new_release_pts, ex = wx/2, ey = sy/2, res = 60) %>%
       sf::st_as_sf()
     } else if (m == 2){
-      ellipse <- sf::st_ellipse(pnt = new_release_pts, ex = ex/2, ey = sy/2, res = 60) %>%
+      ellipse <- nngeo::st_ellipse(pnt = new_release_pts, ex = ex/2, ey = sy/2, res = 60) %>%
         sf::st_as_sf()
       } else if (m == 3){
-        ellipse <- sf::st_ellipse(pnt = new_release_pts, ex = ex/2, ey = ny/2, res = 60) %>%
+        ellipse <- nngeo::st_ellipse(pnt = new_release_pts, ex = ex/2, ey = ny/2, res = 60) %>%
           sf::st_as_sf()
         } else {
-          ellipse <- sf::st_ellipse(pnt = new_release_pts, ex = wx/2, ey = ny/2, res = 60) %>%
+          ellipse <- nngeo::st_ellipse(pnt = new_release_pts, ex = wx/2, ey = ny/2, res = 60) %>%
             sf::st_as_sf()
         }
 
@@ -280,16 +280,16 @@ m <- 1
 
 for(m in 1:4){
   if (m == 1){
-    ellipse <- sf::st_ellipse(pnt = new_release_pts, ex = wx/2, ey = sy/2, res = 60) %>%
+    ellipse <- nngeo::st_ellipse(pnt = new_release_pts, ex = wx/2, ey = sy/2, res = 60) %>%
       sf::st_as_sf()
   } else if (m == 2){
-    ellipse <- sf::st_ellipse(pnt = new_release_pts, ex = ex/2, ey = sy/2, res = 60) %>%
+    ellipse <- nngeo::st_ellipse(pnt = new_release_pts, ex = ex/2, ey = sy/2, res = 60) %>%
       sf::st_as_sf()
   } else if (m == 3){
-    ellipse <- sf::st_ellipse(pnt = new_release_pts, ex = ex/2, ey = ny/2, res = 60) %>%
+    ellipse <- nngeo::st_ellipse(pnt = new_release_pts, ex = ex/2, ey = ny/2, res = 60) %>%
       sf::st_as_sf()
   } else {
-    ellipse <- sf::st_ellipse(pnt = new_release_pts, ex = wx/2, ey = ny/2, res = 60) %>%
+    ellipse <- nngeo::st_ellipse(pnt = new_release_pts, ex = wx/2, ey = ny/2, res = 60) %>%
       sf::st_as_sf()
   }
 
