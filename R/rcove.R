@@ -52,10 +52,10 @@ components_of_velocity <- rotated.velocity %>%
     velocity > 0 ~ "positive",
     TRUE ~ "negative"
   )) %>%
-  group_by(direction, sign) %>%
-  summarise(speed = round(mean(abs(velocity)), digits = 4)) %>%
-  ungroup() %>%
-  mutate(dir = case_when(
+  dplyr::group_by(direction, sign) %>%
+  dplyr::summarise(speed = round(mean(abs(velocity)), digits = 4)) %>%
+  dplyr::ungroup() %>%
+  dplyr::mutate(dir = case_when(
     direction == "cross.shore" & sign == "positive" ~ "north",
     direction == "along.shore" & sign == "positive" ~ "east",
     direction == "cross.shore" & sign == "negative" ~ "south",
@@ -106,7 +106,7 @@ compassline <- function(theta,h,origin=NA){
     }
   }
   if(!is.na(origin)){
-    return(st_sfc(st_linestring(matrix(c(st_coordinates(origin),st_coordinates(origin)+c(x,y)),2,2,byrow = TRUE))))
+    return(sf::st_sfc(sf::st_linestring(matrix(c(sf::st_coordinates(origin),sf::st_coordinates(origin)+c(x,y)),2,2,byrow = TRUE))))
   } else {
     return(c(x,y))
   }
@@ -116,9 +116,9 @@ compassline <- function(theta,h,origin=NA){
 
 #Apply rule of thumb for dispersal distance (distance = average velocity X time (PD))
 foci <- components_of_velocity %>%
-      mutate(distance = units::set_units(as.numeric(speed)*86400*PD, m))
+  dplyr::mutate(distance = units::set_units(as.numeric(speed)*86400*PD, m))
 
-angles <- set_units(c(270, 90, 180, 360), degrees)
+angles <- units::set_units(c(270, 90, 180, 360), degrees)
 rotated_angles <- as.data.frame(angles - theta) %>%
   rename("angle" = "angles - theta")
 foci_lengths <- cbind(foci, rotated_angles)
@@ -127,27 +127,27 @@ foci_lengths$angle <- as.numeric(foci_lengths$angle)
 foci_lengths$distance <- as.numeric(foci_lengths$distance)
 
 foci_vectors <- release_pts %>%
-  mutate(id = as.factor(row.names(.))) %>%
+  dplyr::mutate(id = as.factor(row.names(.))) %>%
   merge(foci_lengths) %>%
-  mutate(cl=pmap(list(angle,distance),
+  dplyr::mutate(cl=purrr:pmap(list(angle,distance),
                  function(angle,distance) compassline(angle,distance))) %>%
-  mutate(origin=geometry,
-         geometry=pmap(list(geometry,cl),
-                       function(geometry,cl) st_point(st_coordinates(geometry)+cl)) %>%
-           st_sfc(crs=proj)) %>%
+  dplyr::mutate(origin=geometry,
+         geometry=purrr::pmap(list(geometry,cl),
+                       function(geometry,cl) sf::st_point(sf::st_coordinates(geometry)+cl)) %>%
+           sf::st_sfc(crs=proj)) %>%
       dplyr::select(-origin, -cl)
 
 ##calculate new centroids based on the 4 kite points
 new_release_pts <- foci_vectors %>%
   dplyr::select(id,dir, geometry) %>%
-  rowwise %>%
-  mutate(x = st_coordinates(geometry)[1],
-         y = st_coordinates(geometry)[2]) %>%
-  st_drop_geometry() %>%
-  pivot_wider(names_from = dir, values_from = c(x,y)) %>%
-  mutate(x_centroid = (x_east + x_west + x_south + x_north)/4,
+  dplyr::rowwise %>%
+  dplyr::mutate(x = sf::st_coordinates(geometry)[1],
+         y = sf::st_coordinates(geometry)[2]) %>%
+  sf::st_drop_geometry() %>%
+  tidyr::pivot_wider(names_from = dir, values_from = c(x,y)) %>%
+  dplyr::mutate(x_centroid = (x_east + x_west + x_south + x_north)/4,
          y_centroid = (y_east + y_west + y_south + y_north)/4) %>%
-  st_as_sf(coords = c(10,11), crs = proj) %>%
+  sf::st_as_sf(coords = c(10,11), crs = proj) %>%
   dplyr::select(id, geometry)
 
 ##calculates the distance between the new centroids and N,E,S,W
@@ -159,10 +159,10 @@ north_foci <- foci_vectors %>%
   dplyr::filter(dir == "north")
 south_foci <- foci_vectors %>%
   dplyr::filter(dir == "south")
-ex <- as.numeric(st_distance(east_foci, new_release_pts, by_element = TRUE))
-wx <- as.numeric(st_distance(west_foci, new_release_pts, by_element = TRUE))
-ny <- as.numeric(st_distance(north_foci, new_release_pts, by_element = TRUE))
-sy <- as.numeric(st_distance(south_foci, new_release_pts, by_element = TRUE))
+ex <- as.numeric(sf::st_distance(east_foci, new_release_pts, by_element = TRUE))
+wx <- as.numeric(sf::st_distance(west_foci, new_release_pts, by_element = TRUE))
+ny <- as.numeric(sf::st_distance(north_foci, new_release_pts, by_element = TRUE))
+sy <- as.numeric(sf::st_distance(south_foci, new_release_pts, by_element = TRUE))
 
 
 ##Loop for concentating four ellipse quadrats starts here
@@ -170,33 +170,33 @@ m <- 1
 
 for(m in 1:4){
   if (m == 1){
-    ellipse <- st_ellipse(pnt = new_release_pts, ex = wx/2, ey = sy/2, res = 60) %>%
-      st_as_sf()
+    ellipse <- sf::st_ellipse(pnt = new_release_pts, ex = wx/2, ey = sy/2, res = 60) %>%
+      sf::st_as_sf()
     } else if (m == 2){
-      ellipse <- st_ellipse(pnt = new_release_pts, ex = ex/2, ey = sy/2, res = 60) %>%
-        st_as_sf()
+      ellipse <- sf::st_ellipse(pnt = new_release_pts, ex = ex/2, ey = sy/2, res = 60) %>%
+        sf::st_as_sf()
       } else if (m == 3){
-        ellipse <- st_ellipse(pnt = new_release_pts, ex = ex/2, ey = ny/2, res = 60) %>%
-          st_as_sf()
+        ellipse <- sf::st_ellipse(pnt = new_release_pts, ex = ex/2, ey = ny/2, res = 60) %>%
+          sf::st_as_sf()
         } else {
-          ellipse <- st_ellipse(pnt = new_release_pts, ex = wx/2, ey = ny/2, res = 60) %>%
-            st_as_sf()
+          ellipse <- sf::st_ellipse(pnt = new_release_pts, ex = wx/2, ey = ny/2, res = 60) %>%
+            sf::st_as_sf()
         }
 
 st_crs(ellipse) <- proj
 
 ##Rotate ellipse around newrelease_pts
-rotated_ellipse <- (st_geometry(ellipse) - st_geometry(new_release_pts)) * rotation.matrix(-theta) + st_geometry(new_release_pts)
+rotated_ellipse <- (sf::st_geometry(ellipse) - sf::st_geometry(new_release_pts)) * rotation.matrix(-theta) + sf::st_geometry(new_release_pts)
 st_crs(rotated_ellipse) <- proj
 
 #Convert to linestring and cut into relative quadrat
 ellipse_points <- rotated_ellipse %>%
-  st_cast("MULTIPOINT", ids = id) %>%
+  sf::st_cast("MULTIPOINT", ids = id) %>%
   as.data.frame() %>%
-  st_as_sf() %>%
-  mutate(id = row_number()) %>%
-  st_cast("POINT", ids = id) %>%
-  mutate(ellipse_id = rep(seq(1:60), times = nrow(new_release_pts)))
+  sf::st_as_sf() %>%
+  dplyr::mutate(id = row_number()) %>%
+  sf::st_cast("POINT", ids = id) %>%
+  dplyr::mutate(ellipse_id = rep(seq(1:60), times = nrow(new_release_pts)))
 
 ##this works but need to make an ifelse for the loop
 if (m == 1){
@@ -220,28 +220,28 @@ m = m+1
 concatenated_ellipse_PD <- rbind(cut_sw, cut_se, cut_ne, cut_nw) %>%
   dplyr::group_by(id) %>%
   dplyr::summarise() %>%
-  st_convex_hull()
+  sf::st_convex_hull()
 
 # Calculate dispersal area for CPD ====
 
 #Apply rule of thumb for dispersal distance (distance = average velocity X time (CPD))
 foci <- components_of_velocity %>%
-  mutate(distance = set_units(as.numeric(speed)*86400*CPD, m))
+  dplyr::mutate(distance = set_units(as.numeric(speed)*86400*CPD, m))
 
 angles <- set_units(c(270, 90, 180, 360), degrees)
 rotated_angles <- as.data.frame(angles - theta) %>%
-  rename("angle" = "angles - theta")
+  dplyr::rename("angle" = "angles - theta")
 foci_lengths <- cbind(foci, rotated_angles)
 
 foci_lengths$angle <- as.numeric(foci_lengths$angle)
 foci_lengths$distance <- as.numeric(foci_lengths$distance)
 
 foci_vectors <- release_pts %>%
-  mutate(id = as.factor(row.names(.))) %>%
+  dplyr::mutate(id = as.factor(row.names(.))) %>%
   merge(foci_lengths) %>%
-  mutate(cl=pmap(list(angle,distance),
+  dplyr::mutate(cl=pmap(list(angle,distance),
                  function(angle,distance) compassline(angle,distance))) %>%
-  mutate(origin=geometry,
+  dplyr::mutate(origin=geometry,
          geometry=pmap(list(geometry,cl),
                        function(geometry,cl) st_point(st_coordinates(geometry)+cl)) %>%
            st_sfc(crs=proj)) %>%
@@ -250,14 +250,14 @@ foci_vectors <- release_pts %>%
 ##calculate new centroids based on the 4 kite points
 new_release_pts <- foci_vectors %>%
   dplyr::select(id,dir, geometry) %>%
-  rowwise %>%
-  mutate(x = st_coordinates(geometry)[1],
+  dplyr::rowwise %>%
+  dplyr::mutate(x = st_coordinates(geometry)[1],
          y = st_coordinates(geometry)[2]) %>%
-  st_drop_geometry() %>%
-  pivot_wider(names_from = dir, values_from = c(x,y)) %>%
-  mutate(x_centroid = (x_east + x_west + x_south + x_north)/4,
+  sf::st_drop_geometry() %>%
+  tidyr::pivot_wider(names_from = dir, values_from = c(x,y)) %>%
+  dplyr::mutate(x_centroid = (x_east + x_west + x_south + x_north)/4,
          y_centroid = (y_east + y_west + y_south + y_north)/4) %>%
-  st_as_sf(coords = c(10,11), crs = proj) %>%
+  sf::st_as_sf(coords = c(10,11), crs = proj) %>%
   dplyr::select(id, geometry)
 
 ##calculates the distance between the new centroids and N,E,S,W
@@ -280,33 +280,33 @@ m <- 1
 
 for(m in 1:4){
   if (m == 1){
-    ellipse <- st_ellipse(pnt = new_release_pts, ex = wx/2, ey = sy/2, res = 60) %>%
-      st_as_sf()
+    ellipse <- sf::st_ellipse(pnt = new_release_pts, ex = wx/2, ey = sy/2, res = 60) %>%
+      sf::st_as_sf()
   } else if (m == 2){
-    ellipse <- st_ellipse(pnt = new_release_pts, ex = ex/2, ey = sy/2, res = 60) %>%
-      st_as_sf()
+    ellipse <- sf::st_ellipse(pnt = new_release_pts, ex = ex/2, ey = sy/2, res = 60) %>%
+      sf::st_as_sf()
   } else if (m == 3){
-    ellipse <- st_ellipse(pnt = new_release_pts, ex = ex/2, ey = ny/2, res = 60) %>%
-      st_as_sf()
+    ellipse <- sf::st_ellipse(pnt = new_release_pts, ex = ex/2, ey = ny/2, res = 60) %>%
+      sf::st_as_sf()
   } else {
-    ellipse <- st_ellipse(pnt = new_release_pts, ex = wx/2, ey = ny/2, res = 60) %>%
-      st_as_sf()
+    ellipse <- sf::st_ellipse(pnt = new_release_pts, ex = wx/2, ey = ny/2, res = 60) %>%
+      sf::st_as_sf()
   }
 
   st_crs(ellipse) <- proj
 
   ##Rotate ellipse around newrelease_pts
-  rotated_ellipse <- (st_geometry(ellipse) - st_geometry(new_release_pts)) * rotation.matrix(-theta) + st_geometry(new_release_pts)
+  rotated_ellipse <- (sf::st_geometry(ellipse) - sf::st_geometry(new_release_pts)) * rotation.matrix(-theta) + sf::st_geometry(new_release_pts)
   st_crs(rotated_ellipse) <- proj
 
   #Convert to linestring and cut into relative quadrat
   ellipse_points <- rotated_ellipse %>%
-    st_cast("MULTIPOINT", ids = id) %>%
+    sf::st_cast("MULTIPOINT", ids = id) %>%
     as.data.frame() %>%
-    st_as_sf() %>%
-    mutate(id = row_number()) %>%
-    st_cast("POINT", ids = id) %>%
-    mutate(ellipse_id = rep(seq(1:60), times = nrow(new_release_pts)))
+    sf::st_as_sf() %>%
+    dplyr::mutate(id = row_number()) %>%
+    sf::st_cast("POINT", ids = id) %>%
+    dplyr::mutate(ellipse_id = rep(seq(1:60), times = nrow(new_release_pts)))
 
   ##this works but need to make an ifelse for the loop
   if (m == 1){
@@ -330,11 +330,11 @@ for(m in 1:4){
 concatenated_ellipse_CPD <- rbind(cut_sw, cut_se, cut_ne, cut_nw) %>%
   dplyr::group_by(id) %>%
   dplyr::summarise() %>%
-  st_convex_hull()
+  sf::st_convex_hull()
 
 CPD_ellipse <- st_difference(concatenated_ellipse_PD, concatenated_ellipse_CPD) |>
-  filter(id == id.1) |>
-  ms_erase(st_simplify(land, dTolerance = 1000),
+  dplyr::filter(id == id.1) |>
+  rmapshaper::ms_erase(sf::st_simplify(land, dTolerance = 1000),
            remove_slivers = TRUE)
 
 return(CPD_ellipse)
